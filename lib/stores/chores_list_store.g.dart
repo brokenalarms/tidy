@@ -40,12 +40,12 @@ mixin _$ChoresListStore on _ChoresListStore, Store {
   }
 
   @override
-  void replaceChore(
+  void replaceChoreInSortedTimeOrder(
       {@required ChoreStore originalChore, @required ChoreStore newChore}) {
     final _$actionInfo = _$_ChoresListStoreActionController.startAction();
     try {
-      return super
-          .replaceChore(originalChore: originalChore, newChore: newChore);
+      return super.replaceChoreInSortedTimeOrder(
+          originalChore: originalChore, newChore: newChore);
     } finally {
       _$_ChoresListStoreActionController.endAction(_$actionInfo);
     }

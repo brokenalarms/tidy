@@ -80,38 +80,6 @@ mixin _$ChoreStore on _ChoreStore, Store {
         name: '${_$resetTimerAfterChoreCompletedAtom.name}_set');
   }
 
-  final _$_ChoreStoreActionController = ActionController(name: '_ChoreStore');
-
-  @override
-  void setTitle(dynamic title) {
-    final _$actionInfo = _$_ChoreStoreActionController.startAction();
-    try {
-      return super.setTitle(title);
-    } finally {
-      _$_ChoreStoreActionController.endAction(_$actionInfo);
-    }
-  }
-
-  @override
-  void setNextDueDate(DateTime date) {
-    final _$actionInfo = _$_ChoreStoreActionController.startAction();
-    try {
-      return super.setNextDueDate(date);
-    } finally {
-      _$_ChoreStoreActionController.endAction(_$actionInfo);
-    }
-  }
-
-  @override
-  void setNextDueTime(TimeOfDay time) {
-    final _$actionInfo = _$_ChoreStoreActionController.startAction();
-    try {
-      return super.setNextDueTime(time);
-    } finally {
-      _$_ChoreStoreActionController.endAction(_$actionInfo);
-    }
-  }
-
   @override
   String toString() {
     final string =

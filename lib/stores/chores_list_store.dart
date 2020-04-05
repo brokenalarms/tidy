@@ -20,17 +20,21 @@ abstract class _ChoresListStore with Store {
   @action
   void insertChoreInSortedTimeOrder(ChoreStore chore) {
     // insert new chore before the next due one
-    final nextLaterDueDate = chores.indexWhere((ChoreStore element) =>
-        chore.nextDue.date.isSameOrBefore(element.nextDue.date));
+    final nextLaterDueDate = chores.indexWhere(
+        (element) => chore.nextDue.date.isSameOrBefore(element.nextDue.date));
     final insertPosition = nextLaterDueDate > 0 ? nextLaterDueDate : 0;
     chores.insert(insertPosition, chore);
   }
 
   @action
-  void replaceChore(
+  void replaceChoreInSortedTimeOrder(
       {@required ChoreStore originalChore, @required ChoreStore newChore}) {
     final oldIndex = chores.indexOf(originalChore);
     chores.remove(originalChore);
-    chores.insert(oldIndex, newChore);
+    if (newChore.nextDue.date.isSame(originalChore.nextDue.date)) {
+      chores.insert(oldIndex, newChore);
+    } else {
+      insertChoreInSortedTimeOrder(newChore);
+    }
   }
 }

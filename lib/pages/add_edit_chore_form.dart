@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../stores/chore_store.dart';
 import '../stores/chores_list_store.dart';
-import '../utils/date_and_time.dart';
+import '../stores/date_and_time.dart';
 
 class AddEditChoreForm extends StatefulWidget {
   final ChoreStore _chore;
@@ -28,7 +28,6 @@ class _AddEditChoreFormState extends State<AddEditChoreForm> {
   @override
   Widget build(BuildContext context) {
     final _chore = widget._chore;
-    final initialDateTime = _chore.nextDueDate;
 
     final choreTitle = Observer(
         builder: (_) => TextFormField(
@@ -57,19 +56,19 @@ class _AddEditChoreFormState extends State<AddEditChoreForm> {
             ));
 
     final dateDropdown = Observer(
-        builder: (_) => _buildDateTimeDropdownInkwell(
-              labelText: initialDateTime.dateText,
-              selectFn: () =>
-                  selectDate(context, initialDate: initialDateTime.dateTime)
-                      .then(_chore.setNextDueDate),
-            ));
+        builder: (context) => _buildDateTimeDropdownInkwell(
+            labelText: _chore.nextDue.dateText,
+            selectFn: () =>
+                selectDate(context, initialDate: _chore.nextDue.dateTime)
+                    .then(_chore.nextDue.setDatePreservingTime)));
 
     final timeDropdown = Observer(
         builder: (_) => _buildDateTimeDropdownInkwell(
-            labelText: initialDateTime.timeText,
-            selectFn: () => selectTime(context,
-                    initialTime: initialDateTime.timeWithoutDate)
-                .then(_chore.setNextDueTime)));
+            labelText: _chore.nextDue.timeText,
+            selectFn: () => {
+                  selectTime(context, initialTime: _chore.nextDue.time)
+                      .then(_chore.nextDue.setTimePreservingDate)
+                }));
 
     final notes = Observer(
         builder: (_) => TextFormField(
@@ -141,11 +140,12 @@ class _AddEditChoreFormState extends State<AddEditChoreForm> {
       return;
     }
 
-    final choreStore = Provider.of<ChoresListStore>(context);
+    final choreStore = Provider.of<ChoresListStore>(context, listen: false);
     if (widget._isNewChore) {
       choreStore.insertChoreInSortedTimeOrder(chore);
     } else {
-      choreStore.replaceChore(originalChore: originalChore, newChore: chore);
+      choreStore.replaceChoreInSortedTimeOrder(
+          originalChore: originalChore, newChore: chore);
     }
     _formKey.currentState.save();
     Navigator.of(context).pop();
