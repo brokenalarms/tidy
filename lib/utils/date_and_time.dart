@@ -34,7 +34,7 @@ class DateAndTime {
   Jiffy _date;
 
   /// Defaults to [DateTime.now] if date not provided
-  DateAndTime([date]) : this._date = Jiffy(date);
+  DateAndTime(DateTime date) : this._date = Jiffy(date);
 
   Jiffy get date {
     return _date;
@@ -52,13 +52,13 @@ class DateAndTime {
     _date = Jiffy(date);
   }
 
-  set time(TimeOfDay newTime) {
+  set timeWithoutDate(TimeOfDay newTime) {
     final date = DateTime(
         _date.year, _date.month, _date.date, newTime.hour, newTime.minute);
     _date = Jiffy(date);
   }
 
-  TimeOfDay get time {
+  TimeOfDay get timeWithoutDate {
     return TimeOfDay(hour: _date.hour, minute: _date.minute);
   }
 

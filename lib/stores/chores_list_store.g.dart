@@ -12,14 +12,14 @@ mixin _$ChoresListStore on _ChoresListStore, Store {
   final _$choresAtom = Atom(name: '_ChoresListStore.chores');
 
   @override
-  ObservableList<Chore> get chores {
+  ObservableList<ChoreStore> get chores {
     _$choresAtom.context.enforceReadPolicy(_$choresAtom);
     _$choresAtom.reportObserved();
     return super.chores;
   }
 
   @override
-  set chores(ObservableList<Chore> value) {
+  set chores(ObservableList<ChoreStore> value) {
     _$choresAtom.context.conditionallyRunInAction(() {
       super.chores = value;
       _$choresAtom.reportChanged();
@@ -30,10 +30,22 @@ mixin _$ChoresListStore on _ChoresListStore, Store {
       ActionController(name: '_ChoresListStore');
 
   @override
-  void addChore(Chore chore) {
+  void insertChoreInSortedTimeOrder(ChoreStore chore) {
     final _$actionInfo = _$_ChoresListStoreActionController.startAction();
     try {
-      return super.addChore(chore);
+      return super.insertChoreInSortedTimeOrder(chore);
+    } finally {
+      _$_ChoresListStoreActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
+  void replaceChore(
+      {@required ChoreStore originalChore, @required ChoreStore newChore}) {
+    final _$actionInfo = _$_ChoresListStoreActionController.startAction();
+    try {
+      return super
+          .replaceChore(originalChore: originalChore, newChore: newChore);
     } finally {
       _$_ChoresListStoreActionController.endAction(_$actionInfo);
     }

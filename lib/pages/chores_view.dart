@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:provider/provider.dart';
 import 'package:tidy/stores/chore_store.dart';
-import 'package:tidy/utils/time.dart';
+import 'package:tidy/utils/date_and_time.dart';
 
 import '../stores/chores_list_store.dart';
-import 'create_new_chore_form.dart';
+import 'add_edit_chore_form.dart';
 
 final screenInsets = const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0);
 
@@ -20,30 +20,34 @@ class ChoresListPage extends StatelessWidget {
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.add_circle_outline),
-            onPressed: () => _pushAddNewChore(context),
+            onPressed: () =>
+                _pushAddEditChoreForm(context, ChoreStore(), isNew: true),
           )
         ],
       ),
-      body: Observer(builder: (_) => _buildChoreList(context)),
+      body:
+          Observer(builder: (BuildContext context) => _buildChoreList(context)),
     );
   }
 
-  void _pushAddNewChore(context) {
+  void _pushAddEditChoreForm(context, chore, {@required isNew}) {
     Navigator.of(context)
         .push(MaterialPageRoute<void>(builder: (BuildContext context) {
       return Scaffold(
-          appBar: AppBar(title: Text("add new chore")),
-          body: Padding(padding: screenInsets, child: NewChoreForm()));
+          appBar: AppBar(title: Text(isNew ? 'add new chore' : 'edit chore')),
+          body: Padding(
+              padding: screenInsets,
+              child: AddEditChoreForm(chore, isNew: isNew)));
     }));
   }
 
-  Widget _buildRow(Chore chore) {
+  Widget _buildRow(BuildContext context, ChoreStore chore) {
     DateAndTime nextDue = chore.nextDue;
     return ListTile(
       dense: true,
       title: Text(chore.title, style: _biggerFont),
       subtitle: Text('Next due on ${nextDue.dateText} at ${nextDue.timeText}'),
-      onTap: () => {},
+      onTap: () => _pushAddEditChoreForm(context, chore, isNew: false),
     );
   }
 
@@ -54,7 +58,7 @@ class ChoresListPage extends StatelessWidget {
         return ListView.separated(
           itemCount: chores.length,
           padding: screenInsets,
-          itemBuilder: (_, index) => _buildRow(chores[index]),
+          itemBuilder: (_, index) => _buildRow(context, chores[index]),
           separatorBuilder: (_, __) => Divider(),
         );
       },

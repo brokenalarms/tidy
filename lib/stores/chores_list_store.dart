@@ -1,5 +1,6 @@
 import 'dart:core';
 
+import 'package:flutter/foundation.dart';
 import 'package:mobx/mobx.dart';
 
 import 'chore_store.dart';
@@ -10,18 +11,26 @@ class ChoresListStore = _ChoresListStore with _$ChoresListStore;
 
 abstract class _ChoresListStore with Store {
   @observable
-  ObservableList<Chore> chores = ObservableList<Chore>.of([
-    Chore.demo(DateTime.now().subtract(Duration(days: 5))),
-    Chore.demo(DateTime.now()),
-    Chore.demo(DateTime.now().add(Duration(days: 5)))
+  ObservableList<ChoreStore> chores = ObservableList<ChoreStore>.of([
+    ChoreStore.demo(DateTime.now().subtract(Duration(days: 5))),
+    ChoreStore.demo(DateTime.now()),
+    ChoreStore.demo(DateTime.now().add(Duration(days: 5)))
   ]);
 
   @action
-  void addChore(Chore chore) {
+  void insertChoreInSortedTimeOrder(ChoreStore chore) {
     // insert new chore before the next due one
-    int nextLaterDueDate = chores.indexWhere((Chore element) =>
+    final nextLaterDueDate = chores.indexWhere((ChoreStore element) =>
         chore.nextDue.date.isSameOrBefore(element.nextDue.date));
-    int insertPosition = nextLaterDueDate > 0 ? nextLaterDueDate : 0;
+    final insertPosition = nextLaterDueDate > 0 ? nextLaterDueDate : 0;
     chores.insert(insertPosition, chore);
+  }
+
+  @action
+  void replaceChore(
+      {@required ChoreStore originalChore, @required ChoreStore newChore}) {
+    final oldIndex = chores.indexOf(originalChore);
+    chores.remove(originalChore);
+    chores.insert(oldIndex, newChore);
   }
 }
