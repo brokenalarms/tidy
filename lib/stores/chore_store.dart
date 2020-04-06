@@ -17,12 +17,7 @@ abstract class _ChoreStore with Store {
   @observable
   String notes;
 
-  @observable
-  bool resetTimerAfterChoreCompleted = false;
-
-  _ChoreStore(
-      {this.resetTimerAfterChoreCompleted = false, nextDueDate, nextDueTime})
-      : nextDue = DateAndTime(nextDueDate);
+  _ChoreStore({nextDueDate}) : nextDue = DateAndTime(nextDueDate);
 
   _ChoreStore.demo([DateTime nextDueDate]) {
     title = WordPair.random().asCamelCase;
@@ -33,6 +28,5 @@ abstract class _ChoreStore with Store {
     title = original.title;
     nextDue = DateAndTime(original.nextDue.dateTime);
     notes = original.notes;
-    resetTimerAfterChoreCompleted = original.resetTimerAfterChoreCompleted;
   }
 }

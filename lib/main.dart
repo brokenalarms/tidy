@@ -10,11 +10,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider<ChoresListStore>(
-            create: (BuildContext context) => ChoresListStore())
+        Provider<ChoresListStore>(create: (context) => ChoresListStore()),
       ],
       child: Consumer<ChoresListStore>(
-        builder: (BuildContext context, ChoresListStore value, Widget child) {
+        builder: (BuildContext context, value, Widget child) {
           return MaterialApp(
               title: 'tidy.', theme: ThemeData.dark(), home: ChoresListPage());
         },

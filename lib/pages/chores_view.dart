@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:provider/provider.dart';
 import 'package:tidy/stores/chore_store.dart';
+import 'package:tidy/stores/chores_list_store.dart';
 
-import '../stores/chores_list_store.dart';
 import 'add_edit_chore_form.dart';
 
 final EdgeInsets screenInsets =

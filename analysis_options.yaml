@@ -4,6 +4,8 @@ analyzer:
 linter:
   rules:
     public_member_api_docs: false
+    type_annotate_public_apis: false
+    prefer_relative_imports: false
   #strong-mode:
     #implicit-casts: false
 

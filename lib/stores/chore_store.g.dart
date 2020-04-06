@@ -60,30 +60,10 @@ mixin _$ChoreStore on _ChoreStore, Store {
     }, _$notesAtom, name: '${_$notesAtom.name}_set');
   }
 
-  final _$resetTimerAfterChoreCompletedAtom =
-      Atom(name: '_ChoreStore.resetTimerAfterChoreCompleted');
-
-  @override
-  bool get resetTimerAfterChoreCompleted {
-    _$resetTimerAfterChoreCompletedAtom.context
-        .enforceReadPolicy(_$resetTimerAfterChoreCompletedAtom);
-    _$resetTimerAfterChoreCompletedAtom.reportObserved();
-    return super.resetTimerAfterChoreCompleted;
-  }
-
-  @override
-  set resetTimerAfterChoreCompleted(bool value) {
-    _$resetTimerAfterChoreCompletedAtom.context.conditionallyRunInAction(() {
-      super.resetTimerAfterChoreCompleted = value;
-      _$resetTimerAfterChoreCompletedAtom.reportChanged();
-    }, _$resetTimerAfterChoreCompletedAtom,
-        name: '${_$resetTimerAfterChoreCompletedAtom.name}_set');
-  }
-
   @override
   String toString() {
     final string =
-        'title: ${title.toString()},nextDue: ${nextDue.toString()},notes: ${notes.toString()},resetTimerAfterChoreCompleted: ${resetTimerAfterChoreCompleted.toString()}';
+        'title: ${title.toString()},nextDue: ${nextDue.toString()},notes: ${notes.toString()}';
     return '{$string}';
   }
 }

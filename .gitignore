@@ -11,8 +11,10 @@
 .pub-cache/
 .pub/
 build/
+.DS_Store
 
 # Android related
+.gradle/
 **/android/**/gradle-wrapper.jar
 **/android/.gradle
 **/android/captures/

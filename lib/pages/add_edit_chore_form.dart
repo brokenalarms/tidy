@@ -44,27 +44,18 @@ class _AddEditChoreFormState extends State<AddEditChoreForm> {
             },
             onChanged: (title) => _chore.title = title));
 
-    final resetTimerAfterCompletionSwitch = Observer(
-        builder: (_) => SwitchListTile.adaptive(
-              title: Text(
-                'Reschedule from day chore is completed',
-              ),
-              secondary: Icon(Icons.restore),
-              value: _chore.resetTimerAfterChoreCompleted,
-              onChanged: (value) =>
-                  _chore.resetTimerAfterChoreCompleted = value,
-            ));
-
     final dateDropdown = Observer(
         builder: (context) => _buildDateTimeDropdownInkwell(
-            labelText: _chore.nextDue.dateText,
+            labelText: 'Start date',
+            dateOrTime: _chore.nextDue.dateText,
             selectFn: () =>
                 selectDate(context, initialDate: _chore.nextDue.dateTime)
                     .then(_chore.nextDue.setDatePreservingTime)));
 
     final timeDropdown = Observer(
         builder: (_) => _buildDateTimeDropdownInkwell(
-            labelText: _chore.nextDue.timeText,
+            labelText: 'Start time',
+            dateOrTime: _chore.nextDue.timeText,
             selectFn: () => {
                   selectTime(context, initialTime: _chore.nextDue.time)
                       .then(_chore.nextDue.setTimePreservingDate)
@@ -99,7 +90,6 @@ class _AddEditChoreFormState extends State<AddEditChoreForm> {
             choreTitle,
             dateDropdown,
             timeDropdown,
-            resetTimerAfterCompletionSwitch,
             notes,
             Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -116,18 +106,18 @@ class _AddEditChoreFormState extends State<AddEditChoreForm> {
           labelText: labelText);
 
   InkWell _buildDateTimeDropdownInkwell(
-          {@required selectFn, @required labelText}) =>
+          {@required selectFn, @required labelText, @required dateOrTime}) =>
       InkWell(
         onTap: selectFn,
         child: InputDecorator(
           decoration: InputDecoration(
-            labelText: 'Start date',
+            labelText: labelText,
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              Text(labelText),
+              Text(dateOrTime),
               Icon(Icons.arrow_drop_down),
             ],
           ),
