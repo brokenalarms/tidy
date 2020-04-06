@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:provider/provider.dart';
 import 'package:tidy/stores/chore_store.dart';
 import 'package:tidy/stores/chores_list_store.dart';
 
+import '../main.dart';
 import 'add_edit_chore_form.dart';
 
 final EdgeInsets screenInsets =
@@ -31,7 +33,45 @@ class ChoresListPage extends StatelessWidget {
   }
 
   void _pushAddEditChoreForm(BuildContext context, ChoreStore chore,
-      {@required isNew}) {
+      {@required isNew}) async {
+    (() async {
+      List<String> lines = List<String>();
+      lines.add('Alex Faarborg  Check this out');
+      lines.add('Jeff Chang    Launch Party');
+      InboxStyleInformation inboxStyleInformation = InboxStyleInformation(lines,
+          contentTitle: '2 new messages', summaryText: 'janedoe@example.com');
+
+      String groupKey = 'com.android.example.WORK_EMAIL';
+      String groupChannelId = 'grouped channel id';
+      String groupChannelName = 'grouped channel name';
+      String groupChannelDescription = 'grouped channel description';
+      AndroidNotificationDetails firstNotificationAndroidSpecifics =
+          AndroidNotificationDetails(
+              groupChannelId, groupChannelName, groupChannelDescription,
+              importance: Importance.Max,
+              priority: Priority.High,
+              groupKey: groupKey);
+      NotificationDetails firstNotificationPlatformSpecifics =
+          NotificationDetails(firstNotificationAndroidSpecifics, null);
+      var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+          'silent channel id',
+          'silent channel name',
+          'silent channel description',
+          priority: Priority.High,
+          importance: Importance.Max,
+          //timeoutAfter: 3000,
+          //styleInformation: DefaultStyleInformation(true, true));
+          styleInformation: inboxStyleInformation);
+      var iOSPlatformChannelSpecifics =
+          IOSNotificationDetails(presentSound: false);
+      var platformChannelSpecifics = NotificationDetails(
+          androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+      await flutterLocalNotificationsPlugin.show(0, 'timeout notification',
+          'Times out after 3 seconds', platformChannelSpecifics);
+      await flutterLocalNotificationsPlugin.show(1, 'Alex Faarborg',
+          'You will not believe...', firstNotificationPlatformSpecifics);
+    })();
+
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (context) {
       return Scaffold(
           appBar: AppBar(title: Text(isNew ? 'add new chore' : 'edit chore')),

@@ -9,7 +9,15 @@ part 'chores_list_store.g.dart';
 
 class ChoresListStore = _ChoresListStore with _$ChoresListStore;
 
-abstract class _ChoresListStore with Store {
+mixin Disposable on Store {
+  void dispose() {}
+}
+
+mixin Restartable on Store {
+  void restart() {}
+}
+
+abstract class _ChoresListStore with Store implements Disposable, Restartable {
   @observable
   ObservableList<ChoreStore> chores = ObservableList<ChoreStore>.of([
     ChoreStore.demo(DateTime.now().subtract(Duration(days: 5))),
@@ -35,6 +43,19 @@ abstract class _ChoresListStore with Store {
       chores.insert(oldIndex, newChore);
     } else {
       insertChoreInSortedTimeOrder(newChore);
+    }
+  }
+
+  @override
+  void dispose() {
+    for (var chore in chores) {
+      chore.dispose();
+    }
+  }
+
+  void restart() {
+    for (var chore in chores) {
+      chore.restart();
     }
   }
 }

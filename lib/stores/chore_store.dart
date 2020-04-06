@@ -1,5 +1,6 @@
 import 'package:english_words/english_words.dart';
 import 'package:mobx/mobx.dart';
+import 'package:tidy/stores/chores_list_store.dart';
 
 import 'date_and_time.dart';
 
@@ -7,7 +8,11 @@ part 'chore_store.g.dart';
 
 class ChoreStore = _ChoreStore with _$ChoreStore;
 
-abstract class _ChoreStore with Store {
+class Schedule {
+  int notifiedCount = 0;
+}
+
+abstract class _ChoreStore with Store implements Disposable, Restartable {
   @observable
   String title;
 
@@ -28,5 +33,15 @@ abstract class _ChoreStore with Store {
     title = original.title;
     nextDue = DateAndTime(original.nextDue.dateTime);
     notes = original.notes;
+  }
+
+  @override
+  void dispose() {
+    nextDue.dispose();
+  }
+
+  @override
+  void restart() {
+    nextDue.restart();
   }
 }

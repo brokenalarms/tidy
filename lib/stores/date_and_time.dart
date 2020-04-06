@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:mobx/mobx.dart';
 
+import 'chores_list_store.dart';
+
 part 'date_and_time.g.dart';
 
 Future<TimeOfDay> selectTime(BuildContext context,
@@ -26,7 +28,7 @@ Future<DateTime> selectDate(BuildContext context,
 
 class DateAndTime = _DateAndTime with _$DateAndTime;
 
-abstract class _DateAndTime with Store {
+abstract class _DateAndTime with Store implements Disposable, Restartable {
   @observable
   Jiffy _date;
 
@@ -34,6 +36,13 @@ abstract class _DateAndTime with Store {
   bool isDue = false;
 
   StreamSubscription<bool> dueDateSubscription;
+
+  @override
+  void dispose() {
+    if (dueDateSubscription != null) {
+      dueDateSubscription.cancel();
+    }
+  }
 
   /// Defaults to [DateTime.now] if date not provided
   _DateAndTime(DateTime date) {
@@ -51,10 +60,11 @@ abstract class _DateAndTime with Store {
 
   setDate(DateTime date) {
     _date = Jiffy(date);
-    _resetCheckForDateTimeElapsed();
+    restart();
   }
 
-  void _resetCheckForDateTimeElapsed() {
+  @override
+  void restart() {
     if (dueDateSubscription != null) {
       dueDateSubscription.cancel();
     }
