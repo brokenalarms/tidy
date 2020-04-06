@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:mobx/mobx.dart';
@@ -28,8 +30,15 @@ abstract class _DateAndTime with Store {
   @observable
   Jiffy _date;
 
+  @observable
+  bool isDue = false;
+
+  StreamSubscription<bool> dueDateSubscription;
+
   /// Defaults to [DateTime.now] if date not provided
-  _DateAndTime(DateTime date) : _date = Jiffy(date);
+  _DateAndTime(DateTime date) {
+    setDate(date);
+  }
 
   /// Set date, preserving time info if not specified
   @action
@@ -37,14 +46,40 @@ abstract class _DateAndTime with Store {
     final time = TimeOfDay.fromDateTime(_date.dateTime);
     final date = DateTime(
         newDate.year, newDate.month, newDate.day, time.hour, time.minute);
+    setDate(date);
+  }
+
+  setDate(DateTime date) {
     _date = Jiffy(date);
+    _resetCheckForDateTimeElapsed();
+  }
+
+  void _resetCheckForDateTimeElapsed() {
+    if (dueDateSubscription != null) {
+      dueDateSubscription.cancel();
+    }
+
+    bool isDue() => _date.isSameOrBefore(DateTime.now());
+
+    if (isDue()) {
+      this.isDue = true;
+    } else {
+      final stream =
+          Stream.periodic(const Duration(seconds: 3), (count) => isDue());
+      dueDateSubscription = stream.listen((isOverdue) {
+        if (isOverdue) {
+          dueDateSubscription.cancel();
+          this.isDue = true;
+        }
+      });
+    }
   }
 
   @action
   void setTimePreservingDate(TimeOfDay time) {
     final date =
         DateTime(_date.year, _date.month, _date.date, time.hour, time.minute);
-    _date = Jiffy(date);
+    setDate(date);
   }
 
   Jiffy get date {

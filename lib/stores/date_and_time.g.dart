@@ -26,6 +26,23 @@ mixin _$DateAndTime on _DateAndTime, Store {
     }, _$_dateAtom, name: '${_$_dateAtom.name}_set');
   }
 
+  final _$isDueAtom = Atom(name: '_DateAndTime.isDue');
+
+  @override
+  bool get isDue {
+    _$isDueAtom.context.enforceReadPolicy(_$isDueAtom);
+    _$isDueAtom.reportObserved();
+    return super.isDue;
+  }
+
+  @override
+  set isDue(bool value) {
+    _$isDueAtom.context.conditionallyRunInAction(() {
+      super.isDue = value;
+      _$isDueAtom.reportChanged();
+    }, _$isDueAtom, name: '${_$isDueAtom.name}_set');
+  }
+
   final _$_DateAndTimeActionController = ActionController(name: '_DateAndTime');
 
   @override
@@ -50,7 +67,7 @@ mixin _$DateAndTime on _DateAndTime, Store {
 
   @override
   String toString() {
-    final string = '';
+    final string = 'isDue: ${isDue.toString()}';
     return '{$string}';
   }
 }

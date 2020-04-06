@@ -11,6 +11,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider<ChoresListStore>(create: (context) => ChoresListStore()),
+        //     Provider<NotificationService>(create: (context) => notificationService),
       ],
       child: Consumer<ChoresListStore>(
         builder: (BuildContext context, value, Widget child) {

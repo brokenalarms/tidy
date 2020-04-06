@@ -11,6 +11,7 @@ final EdgeInsets screenInsets =
 
 class ChoresListPage extends StatelessWidget {
   final _biggerFont = const TextStyle(fontSize: 18);
+  final _biggerFontWarning = const TextStyle(fontSize: 18, color: Colors.red);
 
   @override
   Widget build(BuildContext context) {
@@ -42,12 +43,16 @@ class ChoresListPage extends StatelessWidget {
 
   Widget _buildRow(BuildContext context, ChoreStore chore) {
     final nextDue = chore.nextDue;
-    return ListTile(
-      dense: true,
-      title: Text(chore.title, style: _biggerFont),
-      subtitle: Text('Next due on ${nextDue.dateText} at ${nextDue.timeText}'),
-      onTap: () => _pushAddEditChoreForm(context, chore, isNew: false),
-    );
+    final dueText = 'Next due on ${nextDue.dateText} at ${nextDue.timeText}';
+    final overdueText = 'Overdue: due ${nextDue.date.from(DateTime.now())}';
+    return Observer(
+        builder: (_) => ListTile(
+              dense: true,
+              title: Text(chore.title,
+                  style: nextDue.isDue ? _biggerFontWarning : _biggerFont),
+              subtitle: Text(nextDue.isDue ? overdueText : dueText),
+              onTap: () => _pushAddEditChoreForm(context, chore, isNew: false),
+            ));
   }
 
   Widget _buildChoreList(BuildContext context) {
