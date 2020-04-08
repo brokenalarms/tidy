@@ -1,76 +1,179 @@
-//library notification_service;
-//
-//import 'package:background_fetch/background_fetch.dart';
-//import 'package:flutter/cupertino.dart';
-//
-//final NotificationService notificationService = NotificationService();
-//
-//class NotificationService extends StatefulWidget {
-//  @override
-//  _NotificationServiceState createState() => _NotificationServiceState();
-//}
-//
-//class _NotificationServiceState extends State<NotificationService> {
-//  void checkForDueChores() {}
-//
-//  @override
-//  void initState() {
-//    super.initState();
-//    in
-//  }
-//
-//  @override
-//  void dispose() {
-//    // TODO: implement dispose
-//    super.dispose();
-//  }
-//
-//  @override
-//  Widget build(BuildContext context) {
-//    return null;
-//  }
-//
-//  Future<void> initPlatformState() async {
-//    // Configure BackgroundFetch.
-//    BackgroundFetch.configure(BackgroundFetchConfig(
-//        minimumFetchInterval: 15,
-//        stopOnTerminate: false,
-//        enableHeadless: false,
-//        requiresBatteryNotLow: false,
-//        requiresCharging: false,
-//        requiresStorageNotLow: false,
-//        requiresDeviceIdle: false,
-//        requiredNetworkType: NetworkType.NONE
-//    ), (String taskId) async {
-//      // This is the fetch-event callback.
-//      print("[BackgroundFetch] Event received $taskId");
-//      setState(() {
-//        _events.insert(0, new DateTime.now());
-//      });
-//      // IMPORTANT:  You must signal completion of your task or the OS can punish your app
-//      // for taking too long in the background.
-//      BackgroundFetch.finish(taskId);
-//    }).then((int status) {
-//      print('[BackgroundFetch] configure success: $status');
-//      setState(() {
-//        _status = status;
-//      });
-//    }).catchError((e) {
-//      print('[BackgroundFetch] configure ERROR: $e');
-//      setState(() {
-//        _status = e;
-//      });
-//    });
-//
-//    // Optionally query the current BackgroundFetch status.
-//    int status = await BackgroundFetch.status;
-//    setState(() {
-//      _status = status;
-//    });
-//
-//    // If the widget was removed from the tree while the asynchronous platform
-//    // message was in flight, we want to discard the reply rather than calling
-//    // setState to update our non-existent appearance.
-//    if (!mounted) return;
-//  }
-//}
+import 'dart:async';
+
+import 'package:flutter/widgets.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:jiffy/jiffy.dart';
+import 'package:tidy/stores/chores_list_store.dart';
+
+class ReceivedNotification {
+  final int id;
+  final String title;
+  final String body;
+  final String payload;
+
+  ReceivedNotification({
+    @required this.id,
+    @required this.title,
+    @required this.body,
+    @required this.payload,
+  });
+}
+
+class Debounce {
+  final int milliseconds;
+  VoidCallback action;
+  Timer _timer;
+
+  Debounce(this.milliseconds);
+
+  run(VoidCallback action) {
+    if (_timer != null) {
+      _timer.cancel();
+    }
+    _timer = Timer(Duration(milliseconds: milliseconds), action);
+  }
+}
+
+class NotificationService implements Disposable {
+  static final _notificationService = NotificationService._internal();
+
+  factory NotificationService() => _notificationService;
+
+  NotificationService._internal();
+
+  NotificationAppLaunchDetails notificationAppLaunchDetails;
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+  bool _canNotify = true;
+  final List<List<String>> _pendingNotifications = [];
+  String channelKey = 'com.brokenalarms.tidy.reminders';
+  String channelID = 'tidy.reminders';
+  String channelName = 'Reminders';
+  String channelDescription = 'Daily reminders for overdue tasks';
+
+  init() async {
+    notificationAppLaunchDetails =
+        await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
+    // TODO: app icon here
+    var initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    // Note: permissions aren't requested here just to demonstrate that can
+    // be done later using the `requestPermissions()` method
+    // of the `IOSFlutterLocalNotificationsPlugin` class
+    var initializationSettingsIOS = IOSInitializationSettings(
+        requestAlertPermission: false,
+        requestBadgePermission: false,
+        requestSoundPermission: false,
+        onDidReceiveLocalNotification:
+            (int id, String title, String body, String payload) async {
+          debugPrint(payload);
+          ReceivedNotification(
+              id: id, title: title, body: body, payload: payload);
+        });
+    var initializationSettings = InitializationSettings(
+        initializationSettingsAndroid, initializationSettingsIOS);
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: (String payload) async {
+      if (payload != null) {
+        debugPrint('notification payload: ' + payload);
+      }
+    });
+  }
+
+  void pushOverdueDateNotification(Jiffy date, String choreName) {
+    bool isSameDay = date.isSame(Jiffy(), Units.DAY);
+    // TODO: split up this array and format better
+    String dateDue = isSameDay ? 'today' : date.fromNow();
+    _pendingNotifications.add([choreName, dateDue]);
+    Debounce(1000).run(() {
+      _showGroupedNotifications();
+      _pendingNotifications.clear();
+    });
+  }
+
+  void _afterNotify() {
+    _canNotify = false;
+    Timer(Duration(seconds: 3), () => _canNotify = true);
+  }
+
+  Future<void> _showTimeoutNotification() async {
+    var androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(channelID, channelName, channelDescription,
+            //timeoutAfter: 3000,
+            styleInformation: DefaultStyleInformation(true, true));
+    var iOSPlatformChannelSpecifics =
+        IOSNotificationDetails(presentSound: false);
+    var platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(0, 'timeout notification',
+        'Times out after 3 seconds', platformChannelSpecifics);
+  }
+
+  Future<void> _showHighPriorityNotification() async {
+    var inboxStyleInformation = InboxStyleInformation(
+        _pendingNotifications.map((item) => item[0]),
+        htmlFormatLines: true,
+        contentTitle: '<b>tidy</b>',
+        htmlFormatContentTitle: true,
+        summaryText: 'friendly reminder',
+        htmlFormatSummaryText: true);
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+        channelID, channelName, channelDescription,
+        importance: Importance.Max,
+        priority: Priority.High,
+        styleInformation: inboxStyleInformation);
+    var platformChannelSpecifics =
+        NotificationDetails(androidPlatformChannelSpecifics, null);
+    await flutterLocalNotificationsPlugin.show(
+        1, 'inbox title', 'inbox body', platformChannelSpecifics);
+  }
+
+  Future<void> _showGroupedNotifications() async {
+    var _groupKey = 'com.brokenalarms.tidy';
+    var groupChannelId = 'com.brokenalarms.tidy.reminders';
+    var groupChannelName = 'Chore reminders';
+    var groupChannelDescription = 'Friendly reminders to do the dishes.';
+    List<String> choreTitles =
+        _pendingNotifications.map((item) => item[0]).toList();
+    var inboxStyleInformation = InboxStyleInformation(choreTitles,
+        contentTitle: 'tidy',
+        summaryText: 'it is chore time, my dudes',
+        htmlFormatTitle: true,
+        htmlFormatSummaryText: true,
+        htmlFormatContentTitle: true,
+        htmlFormatContent: true,
+        htmlFormatLines: true);
+    _pendingNotifications.asMap().forEach((key, choreInfo) async {
+      final notificationAndroidSpecifics = AndroidNotificationDetails(
+          groupChannelId, groupChannelName, groupChannelDescription,
+          importance: Importance.Max,
+          priority: Priority.High,
+          styleInformation: inboxStyleInformation,
+          groupKey: _groupKey);
+      var notificationPlatformSpecifics =
+          NotificationDetails(notificationAndroidSpecifics, null);
+
+      final title = '<i>${choreInfo[0]}</i>';
+      final body = 'due ${choreInfo[1]}';
+      await flutterLocalNotificationsPlugin.show(
+          key, title, body, notificationPlatformSpecifics);
+    });
+
+    // create the summary notification to support older devices that pre-date Android 7.0 (API level 24).
+    // this is required is regardless of which versions of Android your application is going to support
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+        groupChannelId, groupChannelName, groupChannelDescription,
+        styleInformation: inboxStyleInformation,
+        groupKey: _groupKey,
+        setAsGroupSummary: true);
+    var platformChannelSpecifics =
+        NotificationDetails(androidPlatformChannelSpecifics, null);
+    await flutterLocalNotificationsPlugin.show(3, 'Attention',
+        '${_pendingNotifications.length} messages', platformChannelSpecifics);
+  }
+
+  @override
+  void dispose() {
+    _canNotify = true;
+  }
+}

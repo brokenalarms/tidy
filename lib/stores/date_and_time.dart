@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:mobx/mobx.dart';
+import 'package:tidy/services/notification_service.dart';
 
 import 'chores_list_store.dart';
 
@@ -35,6 +36,8 @@ abstract class _DateAndTime with Store implements Disposable, Restartable {
   @observable
   bool isDue = false;
 
+  final String _choreName;
+
   StreamSubscription<bool> dueDateSubscription;
 
   @override
@@ -45,7 +48,7 @@ abstract class _DateAndTime with Store implements Disposable, Restartable {
   }
 
   /// Defaults to [DateTime.now] if date not provided
-  _DateAndTime(DateTime date) {
+  _DateAndTime(DateTime date, this._choreName) {
     setDate(date);
   }
 
@@ -69,20 +72,25 @@ abstract class _DateAndTime with Store implements Disposable, Restartable {
       dueDateSubscription.cancel();
     }
 
-    bool isDue() => _date.isSameOrBefore(DateTime.now());
+    bool isDue() => _date.isSameOrBefore(Jiffy());
 
     if (isDue()) {
-      this.isDue = true;
+      _setOverdueAndNotify();
     } else {
       final stream =
           Stream.periodic(const Duration(seconds: 3), (count) => isDue());
       dueDateSubscription = stream.listen((isOverdue) {
         if (isOverdue) {
           dueDateSubscription.cancel();
-          this.isDue = true;
+          _setOverdueAndNotify();
         }
       });
     }
+  }
+
+  void _setOverdueAndNotify() {
+    isDue = true;
+    NotificationService().pushOverdueDateNotification(date, _choreName);
   }
 
   @action

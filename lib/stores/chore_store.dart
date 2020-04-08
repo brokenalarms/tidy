@@ -1,4 +1,5 @@
 import 'package:english_words/english_words.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mobx/mobx.dart';
 import 'package:tidy/stores/chores_list_store.dart';
 
@@ -22,16 +23,17 @@ abstract class _ChoreStore with Store implements Disposable, Restartable {
   @observable
   String notes;
 
-  _ChoreStore({nextDueDate}) : nextDue = DateAndTime(nextDueDate);
+  _ChoreStore({nextDueDate, @required title})
+      : nextDue = DateAndTime(nextDueDate, title);
 
   _ChoreStore.demo([DateTime nextDueDate]) {
     title = WordPair.random().asCamelCase;
-    nextDue = DateAndTime(nextDueDate);
+    nextDue = DateAndTime(nextDueDate, title);
   }
 
   _ChoreStore.copy(ChoreStore original) {
     title = original.title;
-    nextDue = DateAndTime(original.nextDue.dateTime);
+    nextDue = DateAndTime(original.nextDue.dateTime, title);
     notes = original.notes;
   }
 

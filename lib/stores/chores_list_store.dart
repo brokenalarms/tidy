@@ -9,11 +9,11 @@ part 'chores_list_store.g.dart';
 
 class ChoresListStore = _ChoresListStore with _$ChoresListStore;
 
-mixin Disposable on Store {
+mixin Disposable {
   void dispose() {}
 }
 
-mixin Restartable on Store {
+mixin Restartable {
   void restart() {}
 }
 

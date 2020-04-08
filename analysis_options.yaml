@@ -6,6 +6,7 @@ linter:
     public_member_api_docs: false
     type_annotate_public_apis: false
     prefer_relative_imports: false
+    omit_local_variable_types: false
   #strong-mode:
     #implicit-casts: false
 
